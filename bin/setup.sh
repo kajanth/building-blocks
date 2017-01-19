@@ -20,4 +20,3 @@ if [[ "$(hash terraform >/dev/null 2>&1)" = 1 || "$(terraform version | tr -d '\
 fi
 
 terraform version
-pip3 install -Ur requirements.txt
