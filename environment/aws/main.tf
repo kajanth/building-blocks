@@ -19,8 +19,8 @@ variable "internal_subnets" {
   type = "map"
   description = "Internal subnet definitions for each VPC"
   default = {
-    "main"    = []
-    "valinor" = ["10.11.128.0/20", "10.11.134.0/20"]
+    "main"    = ""
+    "valinor" = "10.11.128.0/20,10.11.134.0/20"
   }
 }
 
@@ -28,8 +28,8 @@ variable "external_subnets" {
   type = "map"
   description = "External subnet definitions for each VPC"
   default = {
-    "main"    = ["10.10.32.0/19", "10.10.64.0/19", "10.10.96.0/19"]
-    "valinor" = ["10.11.32.0/20", "10.11.48.0/20", "10.11.64.0/20"]
+    "main"    = "10.10.32.0/19,10.10.64.0/19,10.10.96.0/19"
+    "valinor" = "10.11.32.0/20,10.11.48.0/20,10.11.64.0/20"
   }
 }
 
@@ -42,8 +42,8 @@ module "main_vpc" {
   name               = "${var.name}-main"
   availability_zones = ["${var.availability_zones}"]
   cidr_block         = "${lookup(var.cidr_blocks, "main")}"
-  internal_subnets   = ["${lookup(var.internal_subnets, "main")}"]
-  external_subnets   = ["${lookup(var.external_subnets, "main")}"]
+  internal_subnets   = ["${split(",", lookup(var.internal_subnets, "main"))}"]
+  external_subnets   = ["${split(",", lookup(var.external_subnets, "main"))}"]
 }
 
 module "valinor_vpc" {
@@ -51,8 +51,8 @@ module "valinor_vpc" {
   name               = "${var.name}-valinor"
   availability_zones = ["${var.availability_zones}"]
   cidr_block         = "${lookup(var.cidr_blocks, "valinor")}"
-  internal_subnets   = ["${lookup(var.internal_subnets, "valinor")}"]
-  external_subnets   = ["${lookup(var.external_subnets, "valinor")}"]
+  internal_subnets   = ["${split(",", lookup(var.internal_subnets, "valinor"))}"]
+  external_subnets   = ["${split(",", lookup(var.external_subnets, "valinor"))}"]
 }
 
 module "main_to_valinor" {
