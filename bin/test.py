@@ -10,6 +10,9 @@ for root, dirs, files in os.walk('.', topdown=True):
     for dir in dirs:
         path = os.path.join(root, dir)
         if any([f for f in os.listdir(path) if f.endswith('.tf')]):
-            print('checking Terraform module @ {0} -- '.format(path), end='', flush=True)
+            prefix = '==> checked Terraform module @ {0} '.format(path)
             res = subprocess.call(shlex.split('terraform validate {0}'.format(path)))
-            print('OK' if res == 0 else 'FAIL')
+            res = 'OK' if res == 0 else 'FAIL'
+
+            padding = 80 - len(prefix)
+            print(prefix + res.rjust(padding, ' '))
