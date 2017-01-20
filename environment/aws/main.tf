@@ -42,8 +42,8 @@ module "main_vpc" {
   name               = "${var.name}-main"
   cidr_block         = "${lookup(kubernetes, var.cidr_blocks)}"
   availability_zones = ["${var.availability_zones}"]
-  internal_subnets   = ["${lookup(main, var.internal_subnets)}"]
-  external_subnets   = ["${lookup(main, var.external_subnets)}"]
+  internal_subnets   = ["${lookup(var.internal_subnets, main)}"]
+  external_subnets   = ["${lookup(var.external_subnets, main)}"]
 }
 
 module "valinor_vpc" {
@@ -51,8 +51,8 @@ module "valinor_vpc" {
   name               = "${var.name}-valinor"
   availability_zones = ["${var.availability_zones}"]
   cidr_block         = "${lookup(valinor, var.cidr_blocks)}"
-  internal_subnets   = ["${lookup(valinor, var.internal_subnets)}"]
-  external_subnets   = ["${lookup(valinor, var.external_subnets)}"]
+  internal_subnets   = ["${lookup(var.internal_subnets, valinor)}"]
+  external_subnets   = ["${lookup(var.external_subnets, valinor)}"]
 }
 
 module "main_to_valinor" {
