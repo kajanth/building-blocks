@@ -40,19 +40,19 @@ variable "name" {
 module "main_vpc" {
   source             = "../../net/aws/vpc"
   name               = "${var.name}-main"
-  cidr_block         = "${lookup(kubernetes, var.cidr_blocks)}"
   availability_zones = ["${var.availability_zones}"]
-  internal_subnets   = ["${lookup(var.internal_subnets, main)}"]
-  external_subnets   = ["${lookup(var.external_subnets, main)}"]
+  cidr_block         = "${lookup(var.cidr_blocks, "main")}"
+  internal_subnets   = ["${lookup(var.internal_subnets, "main")}"]
+  external_subnets   = ["${lookup(var.external_subnets, "main")}"]
 }
 
 module "valinor_vpc" {
   source             = "../../net/aws/vpc"
   name               = "${var.name}-valinor"
   availability_zones = ["${var.availability_zones}"]
-  cidr_block         = "${lookup(valinor, var.cidr_blocks)}"
-  internal_subnets   = ["${lookup(var.internal_subnets, valinor)}"]
-  external_subnets   = ["${lookup(var.external_subnets, valinor)}"]
+  cidr_block         = "${lookup(var.cidr_blocks, "valinor")}"
+  internal_subnets   = ["${lookup(var.internal_subnets, "valinor")}"]
+  external_subnets   = ["${lookup(var.external_subnets, "valinor")}"]
 }
 
 module "main_to_valinor" {
