@@ -100,6 +100,34 @@ resource "aws_route" "internal" {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+// Security Group
+// ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_default_security_group" "default" {
+  tags {
+    Name = "${var.name}"
+  }
+}
+
+resource "aws_security_group_rule" "ingress_all" {
+  security_group_id        = "${aws_vpc.main.default_security_group_id}"
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  self                     = true
+}
+
+resource "aws_security_group_rule" "egress_all" {
+  security_group_id        = "${aws_vpc.main.default_security_group_id}"
+  type                     = "egress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  cidr_blocks              = ["0.0.0.0/0"]
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 // Route associations
 // ---------------------------------------------------------------------------------------------------------------------
 

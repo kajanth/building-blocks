@@ -28,7 +28,7 @@ variable "external_subnets" {
   type = "map"
   description = "External subnet definitions for each VPC"
   default = {
-    "main"    = "10.10.32.0/19,10.10.64.0/19,10.10.96.0/19"
+    "main"    = ""
     "valinor" = "10.11.32.0/20,10.11.48.0/20,10.11.64.0/20"
   }
 }
@@ -59,6 +59,30 @@ module "main_to_valinor" {
   source      = "../../net/aws/vpc_peering"
   vpc_id      = "${module.main_vpc.id}"
   peer_vpc_id = "${module.valinor_vpc.id}"
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Security Groups
+// ---------------------------------------------------------------------------------------------------------------------
+
+// Allow traffic FROM valinor INTO main
+resource "aws_security_group_rule" "ingress_valinor_to_main" {
+  security_group_id        = "${module.main_vpc.security_group}"
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  source_security_group_id = "${module.valinor_vpc.security_group}"
+}
+
+// Allow traffic FROM main INTO VALINOR
+resource "aws_security_group_rule" "ingress_main_to_valinor" {
+  security_group_id        = "${module.valinor_vpc.security_group}"
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  source_security_group_id = "${module.main_vpc.security_group}"
 }
 
 output "main_vpc_id"           { value = "${module.main_vpc.id}" }
