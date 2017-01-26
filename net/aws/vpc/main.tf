@@ -26,18 +26,6 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-resource "aws_nat_gateway" "main" {
-  count         = "${length(var.internal_subnets) > 0 ? length(var.internal_subnets) : 0 }"
-  allocation_id = "${element(aws_eip.nat.*.id, count.index)}"
-  subnet_id     = "${element(aws_subnet.external.*.id, count.index)}"
-  depends_on    = ["aws_internet_gateway.main"]
-}
-
-resource "aws_eip" "nat" {
-  count = "${length(var.internal_subnets) > 0 ? length(var.internal_subnets) : 0 }"
-  vpc   = true
-}
-
 // ---------------------------------------------------------------------------------------------------------------------
 // Subnets
 // ---------------------------------------------------------------------------------------------------------------------
@@ -92,39 +80,27 @@ resource "aws_route_table" "internal" {
   }
 }
 
-resource "aws_route" "internal" {
-  count                  = "${length(var.internal_subnets) > 0 ? length(var.internal_subnets) : 0 }"
-  route_table_id         = "${element(aws_route_table.internal.*.id, count.index)}"
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = "${element(aws_nat_gateway.main.*.id, count.index)}"
-}
-
 // ---------------------------------------------------------------------------------------------------------------------
 // Security Group
 // ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_default_security_group" "default" {
-  tags {
-    Name = "${var.name}"
+resource "aws_security_group" "main" {
+  vpc_id      = "${aws_vpc.main.id}"
+  name_prefix = "main-"
+
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
   }
-}
 
-resource "aws_security_group_rule" "ingress_all" {
-  security_group_id        = "${aws_vpc.main.default_security_group_id}"
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  self                     = true
-}
-
-resource "aws_security_group_rule" "egress_all" {
-  security_group_id        = "${aws_vpc.main.default_security_group_id}"
-  type                     = "egress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  cidr_blocks              = ["0.0.0.0/0"]
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -132,13 +108,13 @@ resource "aws_security_group_rule" "egress_all" {
 // ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_route_table_association" "internal" {
-  count          = "${length(var.internal_subnets)}"
+  count          = "${length(compact(var.internal_subnets))}"
   subnet_id      = "${element(aws_subnet.internal.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.internal.*.id, count.index)}"
 }
 
 resource "aws_route_table_association" "external" {
-  count          = "${length(var.external_subnets)}"
+  count          = "${length(compact(var.external_subnets))}"
   subnet_id      = "${element(aws_subnet.external.*.id, count.index)}"
   route_table_id = "${aws_route_table.external.id}"
 }

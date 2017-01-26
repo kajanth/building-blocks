@@ -20,7 +20,7 @@ variable "internal_subnets" {
   description = "Internal subnet definitions for each VPC"
   default = {
     "main"    = ""
-    "valinor" = "10.11.128.0/20,10.11.134.0/20"
+    "valinor" = "10.11.160.0/20,10.11.176.0/20"
   }
 }
 
@@ -42,8 +42,8 @@ module "main_vpc" {
   name               = "${var.name}-main"
   availability_zones = ["${var.availability_zones}"]
   cidr_block         = "${lookup(var.cidr_blocks, "main")}"
-  internal_subnets   = ["${split(",", lookup(var.internal_subnets, "main"))}"]
-  external_subnets   = ["${split(",", lookup(var.external_subnets, "main"))}"]
+  internal_subnets   = ["${compact(split(",", lookup(var.internal_subnets, "main")))}"]
+  external_subnets   = ["${compact(split(",", lookup(var.external_subnets, "main")))}"]
 }
 
 module "valinor_vpc" {
@@ -51,8 +51,8 @@ module "valinor_vpc" {
   name               = "${var.name}-valinor"
   availability_zones = ["${var.availability_zones}"]
   cidr_block         = "${lookup(var.cidr_blocks, "valinor")}"
-  internal_subnets   = ["${split(",", lookup(var.internal_subnets, "valinor"))}"]
-  external_subnets   = ["${split(",", lookup(var.external_subnets, "valinor"))}"]
+  internal_subnets   = ["${compact(split(",", lookup(var.internal_subnets, "valinor")))}"]
+  external_subnets   = ["${compact(split(",", lookup(var.external_subnets, "valinor")))}"]
 }
 
 module "main_to_valinor" {
@@ -72,7 +72,7 @@ resource "aws_security_group_rule" "ingress_valinor_to_main" {
   from_port                = 0
   to_port                  = 0
   protocol                 = "-1"
-  source_security_group_id = "${module.valinor_vpc.security_group}"
+  cidr_blocks              = ["${module.valinor_vpc.cidr_block}"]
 }
 
 // Allow traffic FROM main INTO VALINOR
@@ -82,7 +82,7 @@ resource "aws_security_group_rule" "ingress_main_to_valinor" {
   from_port                = 0
   to_port                  = 0
   protocol                 = "-1"
-  source_security_group_id = "${module.main_vpc.security_group}"
+  cidr_blocks              = ["${module.main_vpc.cidr_block}"]
 }
 
 output "main_vpc_id"           { value = "${module.main_vpc.id}" }
